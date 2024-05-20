@@ -107,12 +107,8 @@ class EstoqueController(ControllerBase):
         self._view.sucesso_ao_reabastecer(item_repositorio)
         self.encontrar(item_repositorio['id'])
 
-    def usar(self, item: Item, quantidade: float) -> Item:
-        item = self.__service.retirar(item, quantidade)
-        return item
-
     def __remover(self, item: Item):
-        opcao = self._view.remover()
+        opcao = self._view.remocao()
         if opcao == 1:
             self.__service.remover(item.id)
             self._view.sucesso_ao_remover(self._repositorio(item))

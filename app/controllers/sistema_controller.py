@@ -20,8 +20,6 @@ from app.views.sistema_view import SistemaView
 class SistemaController(ControllerBase):
     def __init__(self):
         super().__init__(SistemaView())
-        self.__usuario_logado = None
-
         self.__item_service = ItemService()
         self.__pedido_service = PedidoService(self.__item_service)
         self.__cliente_service = ClienteService(self.__item_service, self.__pedido_service)
@@ -82,7 +80,6 @@ class SistemaController(ControllerBase):
                 self._sair(forcar=True)
             ao_errar(throttle + 1)
         else:
-            self.__usuario_logado = usuario
             if isinstance(usuario, Cliente):
                 self.__cliente_controller.usuario_logado = usuario
                 self.__cliente_controller.menu()

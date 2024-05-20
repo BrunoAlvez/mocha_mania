@@ -8,7 +8,6 @@ from app.views.pedido_view import PedidoView
 class PedidoController(ControllerBase):
     def __init__(self, pedido_service: PedidoService):
         self._view = PedidoView()
-        self.__pedidos = []
         self.__service = pedido_service
         self.__usuario_logado = None
         self.__ao_sair = None
@@ -28,10 +27,6 @@ class PedidoController(ControllerBase):
     @ao_sair.setter
     def ao_sair(self, ao_sair: callable):
         self.__ao_sair = ao_sair
-
-    @property
-    def pedidos(self):
-        return self.__pedidos
 
     def menu(self):
         opcao = self._view.menu()

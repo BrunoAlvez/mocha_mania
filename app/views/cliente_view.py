@@ -3,9 +3,6 @@ from app.views.view_base import ViewBase
 
 
 class ClienteView(ViewBase):
-    def __init__(self):
-        pass
-
     @staticmethod
     def menu(tem_fidelidade: bool):
         print('###         Cliente         ###')

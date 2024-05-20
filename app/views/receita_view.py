@@ -103,7 +103,7 @@ class ReceitaView(ViewBase):
         print(f'Preço: {item["preco"]}')
         return input_int('[1] Atualizar - [2] Remover - [0] Sair\n', 0, 2)
 
-    def atualizacao(self, tipo: int, dados_anteriores={}, erros={}) -> dict:
+    def atualizacao(self, dados_anteriores={}, erros={}) -> dict:
         print('###         Atualização         ###')
         print('Digite "0" (zero) para sair')
         if len(dados_anteriores) > 0:
@@ -130,13 +130,13 @@ class ReceitaView(ViewBase):
         return dados
 
     @staticmethod
-    def sucesso_ao_atualizar(funcionario: dict):
-        print(f"Produto #{funcionario['id']} atualizado com sucesso!")
+    def sucesso_ao_atualizar(produto: dict):
+        print(f"Produto #{produto['id']} atualizado com sucesso!")
 
     @staticmethod
     def remocao() -> int:
         return input_int('Tem certeza que deseja remover o produto?\n[1] - Sim [2] - Não\n')
 
     @staticmethod
-    def sucesso_ao_remover(funcionario: dict):
-        print(f"Produto #{funcionario['id']} removido com sucesso!")
+    def sucesso_ao_remover(produto: dict):
+        print(f"Produto #{produto['id']} removido com sucesso!")

@@ -111,12 +111,8 @@ class EstoqueView(ViewBase):
         return dados
 
     @staticmethod
-    def remover() -> int:
-        return input_int('Tem certeza que deseja remover o item?\n[1] - Sim [2] - Não\n')
-
-    @staticmethod
-    def sucesso_ao_atualizar(funcionario: dict):
-        print(f"Item #{funcionario['id']} atualizado com sucesso!")
+    def sucesso_ao_atualizar(item: dict):
+        print(f"Item #{item['id']} atualizado com sucesso!")
 
     @staticmethod
     def reabastecimento(item: dict) -> float:
