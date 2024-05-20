@@ -1,0 +1,2 @@
+class SairException(Exception):
+    pass
