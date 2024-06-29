@@ -7,7 +7,6 @@ class FuncionarioGerenteSeeder(Seeder):
     @staticmethod
     def run() -> [Funcionario]:
         return [Funcionario(
-            id=1,
             nome='Administrador',
             login='admin',
             email='admin@email.com',

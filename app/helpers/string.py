@@ -24,3 +24,7 @@ def pascal_to_camel(string: str) -> str:
 
 def pascal_to_snake(string: str) -> str:
     return camel_to_snake(string)
+
+
+def replace_last(string: str, old: str, new: str) -> str:
+    return string[::-1].replace(old[::-1], new[::-1], 1)[::-1]

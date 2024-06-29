@@ -7,7 +7,6 @@ from app.models.model_base import ModelBase
 class Preparo(ModelBase):
     def __init__(
             self,
-            id: int,
             ingrediente: Ingrediente,
             quantidade: float,
             unidade: UnidadeEnum,
@@ -15,7 +14,14 @@ class Preparo(ModelBase):
             tempo: float or None,
             unidade_tempo: UnidadeTempoEnum or None,
     ):
-        self.__id = id
+        super().__init__(
+            ingrediente=Ingrediente,
+            quantidade=float,
+            unidade=UnidadeEnum,
+            descricao=str,
+            tempo=float or None,
+            unidade_tempo=UnidadeTempoEnum or None,
+        )
         self.__ingrediente = ingrediente
         self.__quantidade = quantidade
         self.__unidade = unidade
@@ -23,11 +29,9 @@ class Preparo(ModelBase):
         self.__tempo = tempo
         self.__unidade_tempo = unidade_tempo
 
-    @staticmethod
-    def validacoes() -> dict:
+    def validacoes(self) -> dict:
         return {
             'validacoes': {
-                'id': ['required', 'integer'],
                 'ingrediente': ['required', 'instance:Ingrediente'],
                 'quantidade': ['required', 'float'],
                 'unidade': ['required', 'string', 'enum:UnidadeDeMedidaEnum'],
@@ -36,15 +40,23 @@ class Preparo(ModelBase):
                 'unidade_tempo': ['nullable', 'string', 'enum:UnidadeDeTempoEnum'],
             },
             'traducoes': {
-                'id': 'ID',
                 'descricao': 'descrição',
                 'unidade_tempo': 'unidade de tempo',
             }
         }
 
-    @property
-    def id(self) -> int:
-        return self.__id
+    @staticmethod
+    def persistencia():
+        from database.persistencias.preparo_persistencia import PreparoPersistencia
+        return PreparoPersistencia()
+
+    @staticmethod
+    def all() -> list:
+        return Preparo.persistencia().buscar()
+
+    @staticmethod
+    def find(id: int) -> 'Preparo':
+        return Preparo.persistencia().visualizar(id)
 
     @property
     def ingrediente(self) -> Ingrediente:
@@ -59,7 +71,7 @@ class Preparo(ModelBase):
         self.__quantidade = quantidade
 
     @property
-    def unidade(self) -> str:
+    def unidade(self) -> UnidadeEnum:
         return self.__unidade
 
     @unidade.setter

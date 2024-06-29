@@ -9,17 +9,8 @@ from app.views.receita_view import ReceitaView
 
 
 class ReceitaController(ControllerBase):
-    def __init__(self, item_service: ItemService):
+    def __init__(self, ao_sair: callable):
         super().__init__(ReceitaView())
-        self.__service = item_service
-        self.__ao_sair = None
-
-    @property
-    def ao_sair(self) -> callable:
-        return self.__ao_sair
-
-    @ao_sair.setter
-    def ao_sair(self, ao_sair: callable):
         self.__ao_sair = ao_sair
 
     def menu(self):
@@ -34,7 +25,7 @@ class ReceitaController(ControllerBase):
             self.menu()
 
     def __listar(self):
-        produtos = self.__service.listar(filtros={'apenas_preparados': True})
+        produtos = ItemService.listar(filtros={'apenas_preparados': True})
         produtos_repositorio = []
         for produto in produtos:
             produtos_repositorio.append(self._repositorio(produto))
@@ -44,20 +35,24 @@ class ReceitaController(ControllerBase):
         else:
             self.__encontrar(opcao)
 
-    def __cadastrar(self, dados_anteriores={}, erros={}):
+    def __cadastrar(self, dados_anteriores=None, erros=None):
+        if dados_anteriores is None:
+            dados_anteriores = {}
+        if erros is None:
+            erros = {}
         ingredientes = []
-        for ingrediente in self.__service.ingredientes():
+        for ingrediente in ItemService.ingredientes():
             ingredientes.append({
                 'id': ingrediente.id,
                 'nome': ingrediente.nome,
                 'unidade': ingrediente.unidade,
             })
+        dados = self._view.cadastro(ingredientes, dados_anteriores, erros)
         try:
-            dados = self._view.cadastro(ingredientes, dados_anteriores, erros)
             dados_validos = copy(dados)
-            dados_validos['id'] = self.__service.get_id(self.__service.itens)
+            dados_validos['id'] = ItemService.get_id(ItemService.itens)
             dados_validos['tipo'] = Produto
-            produto = self.__service.cadastrar(dados_validos)
+            produto = ItemService.cadastrar(dados_validos)
             produto = self._repositorio(produto)
             self._view.sucesso_ao_cadastrar(produto)
             self.__encontrar(produto['id'])
@@ -70,7 +65,7 @@ class ReceitaController(ControllerBase):
             self.menu()
 
     def __encontrar(self, id: int):
-        produto = self.__service.encontrar(id)
+        produto = ItemService.encontrar(id)
         produto_repositorio = self._repositorio(produto)
         opcao = self._view.detalhes(produto_repositorio)
         if opcao == 0:
@@ -82,15 +77,19 @@ class ReceitaController(ControllerBase):
         else:
             self.__encontrar(id)
 
-    def __atualizar(self, produto: Produto, dados_anteriores={}, erros={}):
+    def __atualizar(self, produto: Produto, dados_anteriores=None, erros=None):
+        if dados_anteriores is None:
+            dados_anteriores = {}
+        if erros is None:
+            erros = {}
+        dados = self._view.atualizacao(
+            self._repositorio(produto),
+            dados_anteriores,
+            erros,
+        )
         try:
-            dados = self._view.atualizacao(
-                self._repositorio(produto),
-                dados_anteriores,
-                erros,
-            )
             dados_validos = copy(dados)
-            produto_atualizado = self.__service.atualizar(produto, dados_validos)
+            produto_atualizado = ItemService.atualizar(produto, dados_validos)
             produto_repositorio = self._repositorio(produto_atualizado)
             self._view.sucesso_ao_atualizar(produto_repositorio)
             self.__encontrar(produto_repositorio['id'])
@@ -105,7 +104,7 @@ class ReceitaController(ControllerBase):
     def __remover(self, produto: Produto):
         opcao = self._view.remover()
         if opcao == 1:
-            self.__service.remover(produto.id)
+            ItemService.remover(produto.id)
             self._view.sucesso_ao_remover(self._repositorio(produto))
             self.menu()
         else:

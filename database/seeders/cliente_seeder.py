@@ -10,7 +10,6 @@ class ClienteSeeder(Seeder):
     def run() -> [ModelBase]:
         return [
             Cliente(
-                1,
                 'Cliente',
                 'cliente',
                 'cliente@email.com',

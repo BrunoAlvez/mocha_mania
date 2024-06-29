@@ -4,24 +4,29 @@ from app.models.model_base import ModelBase
 
 
 class ServiceBase(ABC):
+    @staticmethod
     @abstractmethod
-    def cadastrar(self, dados: dict):
+    def cadastrar(dados: dict):
         pass
 
+    @staticmethod
     @abstractmethod
-    def atualizar(self, modelo: ModelBase, dados: dict):
+    def atualizar(modelo: ModelBase, dados: dict):
         pass
 
+    @staticmethod
     @abstractmethod
-    def remover(self, id: int):
+    def remover(id: int):
         pass
 
+    @staticmethod
     @abstractmethod
-    def encontrar(self, id: int):
+    def encontrar(id: int):
         pass
 
+    @staticmethod
     @abstractmethod
-    def listar(self, filtros: dict = None):
+    def listar(filtros: dict = None):
         pass
 
     @staticmethod

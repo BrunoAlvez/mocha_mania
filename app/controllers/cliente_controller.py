@@ -2,7 +2,6 @@ from datetime import datetime
 
 from app.controllers.controller_base import ControllerBase
 from app.exceptions.regra_de_negocio_exception import RegraDeNegocioException
-from app.exceptions.sair_exception import SairException
 from app.models.cliente import Cliente
 from app.services.cliente_service import ClienteService
 from app.services.item_service import ItemService
@@ -11,28 +10,15 @@ from app.views.cliente_view import ClienteView
 
 
 class ClienteController(ControllerBase):
-    def __init__(self,
-                 cliente_service: ClienteService,
-                 item_service: ItemService,
-                 pedido_service: PedidoService,
-                 ao_sair: callable,
-                 ):
+    def __init__(self, usuario_logado: Cliente, ao_sair: callable):
         super().__init__(ClienteView())
-        self.__service = cliente_service
-        self.__item_service = item_service
-        self.__pedido_service = pedido_service
 
+        self.__usuario_logado = usuario_logado
         self.__ao_sair = ao_sair
-
-        self.__usuario_logado = None
 
     @property
     def usuario_logado(self) -> Cliente:
         return self.__usuario_logado
-
-    @usuario_logado.setter
-    def usuario_logado(self, usuario: Cliente):
-        self.__usuario_logado = usuario
 
     def menu(self):
         opcao = self._view.menu(self.usuario_logado.fidelidade is None)
@@ -51,19 +37,18 @@ class ClienteController(ControllerBase):
             self.menu()
 
     def __pedir(self):
+        item_service = ItemService()
         produtos_repositorio = []
-        for produto in self.__item_service.produtos():
+        for produto in item_service.produtos():
             produtos_repositorio.append(self._repositorio(produto))
         try:
             produto_id = self._view.pedido(produtos_repositorio)
-            produto = self.__item_service.encontrar_produto(produto_id)
-            pedido = self.__service.pedir(produto, self.usuario_logado)
+            produto = item_service.encontrar_produto(produto_id)
+            pedido = ClienteService.pedir(produto, self.usuario_logado)
             self._view.sucesso_ao_pedir(self._repositorio(pedido))
         except RegraDeNegocioException as e:
             self._view.erro_ao_pedir(e.mensagem)
             self.__pedir()
-        except SairException:
-            pass
         except Exception as e:
             self._view.erro_ao_pedir(e)
             self.__pedir()
@@ -76,7 +61,7 @@ class ClienteController(ControllerBase):
         if data is not None:
             filtros['data'] = data
 
-        pedidos = self.__pedido_service.listar(filtros)
+        pedidos = PedidoService.listar(filtros)
 
         pedidos_repositorio = []
         for pedido in pedidos:
@@ -104,11 +89,12 @@ class ClienteController(ControllerBase):
 
     def __fidelizar(self):
         try:
-            cliente = self.__service.cadastrar_fidelidade(self.usuario_logado.id)
+            cliente = ClienteService.cadastrar_fidelidade(self.usuario_logado.id)
             self._view.sucesso_ao_fidelizar(cliente)
         except RegraDeNegocioException as e:
             self._view.erro_ao_fidelizar(e)
         self.menu()
 
-    def validar_usuario(self, login: str, senha: str) -> Cliente or None:
-        return self.__service.validar_usuario(login, senha)
+    @staticmethod
+    def validar_usuario(login: str, senha: str) -> Cliente or None:
+        return ClienteService.validar_usuario(login, senha)

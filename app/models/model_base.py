@@ -30,9 +30,8 @@ class ModelBase(ABC):
     def escondidos() -> list:
         return []
 
-    @staticmethod
     @abstractmethod
-    def validacoes() -> dict:
+    def validacoes(self) -> dict:
         pass
 
     def __valida_dados(self, **valores):
@@ -48,4 +47,28 @@ class ModelBase(ABC):
             traducoes: dict = {}
         else:
             traducoes: dict = self.validacoes()['traducoes']
-        regras.validar(valores, validacoes, traducoes)
+        regras.validar(valores, validacoes, traducoes, self)
+
+    @staticmethod
+    @abstractmethod
+    def persistencia():
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def all() -> list:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def find(id: int):
+        pass
+
+    def create(self):
+        return self.persistencia().cadastrar(self)
+
+    def update(self):
+        return self.persistencia().atualizar(self)
+
+    def delete(self):
+        self.persistencia().remover(self.__getattribute__('id'))

@@ -8,21 +8,11 @@ from app.models.item import Item
 from app.models.produto import Produto
 from app.services.item_service import ItemService
 from app.views.estoque_view import EstoqueView
-from database.seeders.itens_seeder import ItensSeeder
 
 
 class EstoqueController(ControllerBase):
-    def __init__(self, item_service: ItemService):
+    def __init__(self, ao_sair: callable):
         super().__init__(EstoqueView())
-        self.__service = item_service
-        self.__ao_sair = None
-
-    @property
-    def ao_sair(self) -> callable:
-        return self.__ao_sair
-
-    @ao_sair.setter
-    def ao_sair(self, ao_sair: callable):
         self.__ao_sair = ao_sair
 
     def menu(self):
@@ -37,7 +27,7 @@ class EstoqueController(ControllerBase):
             self.menu()
 
     def __listar(self):
-        itens = self.__service.listar()
+        itens = ItemService.listar()
         itens_repositorio = []
         for item in itens:
             itens_repositorio.append(self._repositorio(item))
@@ -47,13 +37,16 @@ class EstoqueController(ControllerBase):
         else:
             self.encontrar(opcao)
 
-    def __cadastrar(self, tipo: int = None, dados_anteriores={}, erros={}):
+    def __cadastrar(self, tipo: int = None, dados_anteriores=None, erros=None):
+        if dados_anteriores is None:
+            dados_anteriores = {}
+        if erros is None:
+            erros = {}
+        dados, tipo = self._view.cadastro(tipo, dados_anteriores, erros)
         try:
-            dados, tipo = self._view.cadastro(tipo, dados_anteriores, erros)
             dados_validos = copy(dados)
-            dados_validos['id'] = self.__service.get_id(self.__service.itens)
             dados_validos['tipo'] = Produto if tipo == 1 else Ingrediente
-            item = self.__service.cadastrar(dados_validos)
+            item = ItemService.cadastrar(dados_validos)
             item = self._repositorio(item)
             self._view.sucesso_ao_cadastrar(item)
             self.encontrar(item['id'])
@@ -66,7 +59,7 @@ class EstoqueController(ControllerBase):
             self.menu()
 
     def encontrar(self, id: int):
-        item = self.__service.encontrar(id)
+        item = ItemService.encontrar(id)
         item_repositorio = self._repositorio(item)
         opcao = self._view.detalhes(item_repositorio)
         if opcao == 0:
@@ -80,15 +73,19 @@ class EstoqueController(ControllerBase):
         else:
             self.encontrar(id)
 
-    def __atualizar(self, item: Item, dados_anteriores={}, erros={}):
+    def __atualizar(self, item: Item, dados_anteriores=None, erros=None):
+        if dados_anteriores is None:
+            dados_anteriores = {}
+        if erros is None:
+            erros = {}
+        dados = self._view.atualizacao(
+            1 if isinstance(item, Produto) else 2,
+            dados_anteriores,
+            erros,
+        )
         try:
-            dados = self._view.atualizacao(
-                1 if isinstance(item, Produto) else 2,
-                dados_anteriores,
-                erros,
-            )
             dados_validos = copy(dados)
-            item_atualizado = self.__service.atualizar(item, dados_validos)
+            item_atualizado = ItemService.atualizar(item, dados_validos)
             item_repositorio = self._repositorio(item_atualizado)
             self._view.sucesso_ao_atualizar(item_repositorio)
             self.encontrar(item_repositorio['id'])
@@ -102,7 +99,7 @@ class EstoqueController(ControllerBase):
 
     def __reabastecer(self, item: Item):
         quantidade = self._view.reabastecimento(self._repositorio(item))
-        item_atualizado = self.__service.reabastecer(item, quantidade)
+        item_atualizado = ItemService.reabastecer(item, quantidade)
         item_repositorio = self._repositorio(item_atualizado)
         self._view.sucesso_ao_reabastecer(item_repositorio)
         self.encontrar(item_repositorio['id'])
@@ -110,7 +107,7 @@ class EstoqueController(ControllerBase):
     def __remover(self, item: Item):
         opcao = self._view.remocao()
         if opcao == 1:
-            self.__service.remover(item.id)
+            ItemService.remover(item.id)
             self._view.sucesso_ao_remover(self._repositorio(item))
             self.menu()
         elif opcao == 0:

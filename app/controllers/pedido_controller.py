@@ -1,16 +1,13 @@
 from app.controllers.controller_base import ControllerBase
 from app.enums.status_pedido_enum import StatusPedidoEnum
 from app.models.funcionario import Funcionario
-from app.services.pedido_service import PedidoService
 from app.views.pedido_view import PedidoView
 
 
 class PedidoController(ControllerBase):
-    def __init__(self, pedido_service: PedidoService):
+    def __init__(self, ao_sair: callable):
         self._view = PedidoView()
-        self.__service = pedido_service
-        self.__usuario_logado = None
-        self.__ao_sair = None
+        self.__ao_sair = ao_sair
 
     @property
     def usuario_logado(self) -> Funcionario:

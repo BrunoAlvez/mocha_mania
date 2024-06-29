@@ -7,7 +7,6 @@ from app.models.pessoa import Pessoa
 class Cliente(Pessoa):
     def __init__(
             self,
-            id: int,
             nome: str,
             login: str,
             email: str,
@@ -17,7 +16,6 @@ class Cliente(Pessoa):
             telefone: str,
     ):
         super().__init__(
-            id=id,
             nome=nome,
             login=login,
             email=email,
@@ -38,9 +36,9 @@ class Cliente(Pessoa):
     def validacoes(self) -> dict:
         validacoes = super().validacoes()
         validacoes['validacoes'].update({
-            'cpf': ['required', 'string', 'cpf'],
+            'cpf': ['required', 'unique', 'string', 'cpf'],
             'data_de_nascimento': ['required', 'date'],
-            'telefone': ['required', 'string', 'telefone'],
+            'telefone': ['required', 'unique', 'string', 'telefone'],
             'fidelidade': ['nullable', 'instance:Fidelidade'],
         })
         validacoes['traducoes'].update({
@@ -48,6 +46,19 @@ class Cliente(Pessoa):
             'data_de_nascimento': 'data de nascimento',
         })
         return validacoes
+
+    @staticmethod
+    def persistencia():
+        from database.persistencias.cliente_persistencia import ClientePersistencia
+        return ClientePersistencia()
+
+    @staticmethod
+    def all() -> list:
+        return Cliente.persistencia().buscar()
+
+    @staticmethod
+    def find(id: int) -> 'Cliente':
+        return Cliente.persistencia().visualizar(id)
 
     @property
     def cpf(self) -> str:

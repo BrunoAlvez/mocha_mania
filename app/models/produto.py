@@ -4,15 +4,22 @@ from app.models.item import Item
 
 class Produto(Item):
     def __init__(self,
-                 id: int,
                  nome: str,
                  quantidade: float,
                  descricao: str,
                  preco: float,
-                 preparos: list = [],
+                 preparos: list = None,
                  ):
-        super().__init__(id, nome, quantidade, UnidadeEnum.UNIDADE)
-        self.__id = id
+        super().__init__(
+            nome=nome,
+            quantidade=quantidade,
+            unidade=UnidadeEnum.UNIDADE,
+            descricao=descricao,
+            preco=preco,
+        )
+        if preparos is None:
+            preparos = []
+
         self.__nome = nome
         self.__descricao = descricao
         self.__preco = preco
@@ -29,6 +36,19 @@ class Produto(Item):
             'preco': 'Preço',
         })
         return validacoes
+
+    @staticmethod
+    def persistencia():
+        from database.persistencias.produto_persistencia import ProdutoPersistencia
+        return ProdutoPersistencia()
+
+    @staticmethod
+    def all() -> list:
+        return [item for item in Produto.persistencia().buscar() if isinstance(item, Produto)]
+
+    @staticmethod
+    def find(id: int) -> 'Produto':
+        return Produto.persistencia().visualizar(id)
 
     @property
     def descricao(self) -> str:

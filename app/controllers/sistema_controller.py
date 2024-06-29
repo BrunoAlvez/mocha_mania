@@ -2,47 +2,19 @@ from copy import copy
 
 from app.controllers.cliente_controller import ClienteController
 from app.controllers.controller_base import ControllerBase
-from app.controllers.estoque_controller import EstoqueController
 from app.controllers.funcionario_controller import FuncionarioController
-from app.controllers.pedido_controller import PedidoController
-from app.controllers.receita_controller import ReceitaController
 from app.exceptions.regra_de_negocio_exception import RegraDeNegocioException
 from app.exceptions.sair_exception import SairException
 from app.models.cliente import Cliente
 from app.models.pessoa import Pessoa
 from app.services.cliente_service import ClienteService
 from app.services.funcionario_service import FuncionarioService
-from app.services.item_service import ItemService
-from app.services.pedido_service import PedidoService
 from app.views.sistema_view import SistemaView
 
 
 class SistemaController(ControllerBase):
     def __init__(self):
         super().__init__(SistemaView())
-        self.__item_service = ItemService()
-        self.__pedido_service = PedidoService(self.__item_service)
-        self.__cliente_service = ClienteService(self.__item_service, self.__pedido_service)
-        self.__funcionario_service = FuncionarioService(self.__item_service, self.__pedido_service)
-
-        self.__estoque_controller = EstoqueController(self.__item_service)
-        self.__receita_controller = ReceitaController(self.__item_service)
-        self.__pedido_controller = PedidoController(self.__pedido_service)
-        self.__cliente_controller = ClienteController(
-            self.__cliente_service,
-            self.__item_service,
-            self.__pedido_service,
-            ao_sair=self.menu,
-        )
-        self.__funcionario_controller = FuncionarioController(
-            self.__funcionario_service,
-            self.__estoque_controller,
-            self.__receita_controller,
-            self.__pedido_controller,
-            self.__item_service,
-            self.__pedido_service,
-            ao_sair=self.menu,
-        )
 
     def menu(self):
         opcao = self._view.menu()
@@ -60,7 +32,7 @@ class SistemaController(ControllerBase):
     def __login_cliente(self, throttle: int = 0):
         try:
             login, senha, throttle = self._view.login(throttle)
-            usuario = self.__cliente_controller.validar_usuario(login, senha)
+            usuario = ClienteService.validar_usuario(login, senha)
             self.__validacoes_login(usuario, throttle, ao_errar=self.__login_cliente)
         except SairException as _:
             self.menu()
@@ -68,7 +40,7 @@ class SistemaController(ControllerBase):
     def __login_funcionario(self, throttle: int = 0):
         try:
             login, senha, throttle = self._view.login(throttle)
-            usuario = self.__funcionario_controller.validar_usuario(login, senha)
+            usuario = FuncionarioService.validar_usuario(login, senha)
             self.__validacoes_login(usuario, throttle, ao_errar=self.__login_funcionario)
         except SairException as _:
             self.menu()
@@ -81,15 +53,26 @@ class SistemaController(ControllerBase):
             ao_errar(throttle + 1)
         else:
             if isinstance(usuario, Cliente):
-                self.__cliente_controller.usuario_logado = usuario
-                self.__cliente_controller.menu()
+                cliente_controller = ClienteController(
+                    usuario_logado=usuario,
+                    ao_sair=self.menu,
+                )
+                cliente_controller.menu()
             else:
-                self.__funcionario_controller.usuario_logado = usuario
-                self.__funcionario_controller.menu()
+                funcionario_controller = FuncionarioController(
+                    usuario_logado=usuario,
+                    ao_sair=self.menu,
+                )
+                funcionario_controller.menu()
 
-    def cadastrar(self, dados_anteriores={}, erros={}):
+    def cadastrar(self, dados_anteriores: dict = None, erros: dict = None):
+        if dados_anteriores is None:
+            dados_anteriores = {}
+        if erros is None:
+            erros = {}
+
+        dados = self._view.cadastro(dados_anteriores, erros)
         try:
-            dados = self._view.cadastro(dados_anteriores, erros)
             if dados['confirmacao_senha'] != dados['senha']:
                 raise RegraDeNegocioException('As senhas não conferem', {
                     'erros': [
@@ -98,8 +81,7 @@ class SistemaController(ControllerBase):
                 })
             dados_validos = copy(dados)
             dados_validos.pop('confirmacao_senha')
-            dados_validos['id'] = self.__cliente_service.get_id(self.__cliente_service.clientes)
-            cliente = self.__cliente_service.cadastrar(dados_validos)
+            cliente = ClienteService.cadastrar(dados_validos)
             cliente_repositorio = self._repositorio(cliente)
             self._view.sucesso_ao_cadastrar(cliente_repositorio)
             self.__login_cliente()

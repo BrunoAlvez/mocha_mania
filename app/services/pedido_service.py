@@ -9,33 +9,29 @@ from app.services.service_base import ServiceBase
 
 
 class PedidoService(ServiceBase):
-    def __init__(self, item_service: ItemService):
-        self.__item_service = item_service
-        self.__pedidos = []
+    @staticmethod
+    def pedidos():
+        return Pedido.all()
 
-    @property
-    def pedidos(self):
-        return self.__pedidos
+    @staticmethod
+    def cadastrar(dados: dict) -> Pedido:
+        return Pedido(**dados).create()
 
-    def cadastrar(self, dados: dict):
-        pedido = Pedido(**dados)
-        self.__pedidos.append(pedido)
-        return pedido
+    @staticmethod
+    def atualizar(pedido: Pedido, dados: dict):
+        raise RegraDeNegocioException('Não é possível atualizar um pedido')
 
-    def atualizar(self, pedido: Pedido, dados: dict):
-        pass
-
-    def remover(self, id: int):
+    @staticmethod
+    def remover(id: int):
         raise RegraDeNegocioException('Não é possível remover um pedido')
 
-    def encontrar(self, id: int) -> Pedido:
-        for pedido in self.__pedidos:
-            if pedido.id == id:
-                return pedido
-        raise Exception('Pedido não encontrado')
+    @staticmethod
+    def encontrar(id: int) -> Pedido:
+        return Pedido.find(id)
 
-    def listar(self, filtros: dict = None) -> list:
-        pedidos = self.__pedidos
+    @staticmethod
+    def listar(filtros: dict = None) -> list:
+        pedidos = Pedido.all()
         if filtros is not None:
             if 'cliente_id' in filtros:
                 pedidos = list(filter(lambda pedido: pedido.cliente.id == filtros['cliente_id'], pedidos))

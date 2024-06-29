@@ -6,23 +6,20 @@ from app.models.model_base import ModelBase
 
 
 class Pedido(ModelBase):
-    def __init__(self, id: int, cliente: Cliente, itens: list):
-        super().__init__()
-        self.__id = id
+    def __init__(self, cliente: Cliente, itens: list):
+        super().__init__(cliente=cliente, itens=itens)
         self.__data = datetime.now()
         self.__status = StatusPedidoEnum.PENDENTE
         self.__itens = itens
         self.__cliente = cliente
         self.__responsavel = None
 
-    @staticmethod
-    def validacoes() -> dict:
+    def validacoes(self) -> dict:
         return {
             'validacoes': {
-                'id': ['required', 'integer'],
                 'data': ['required', 'date'],
                 'status': ['required', 'enum:StatusPedidoEnum'],
-                'itens': ['required', 'list', 'min:1', 'instance:Produto'],
+                'itens': ['required', 'list', 'min:1', 'instance:Produto,Ingrediente'],
                 'cliente': ['required', 'instance:Cliente'],
                 'responsavel': ['nullable', 'instance:Funcionario'],
             },
@@ -32,9 +29,18 @@ class Pedido(ModelBase):
             }
         }
 
-    @property
-    def id(self) -> int:
-        return self.__id
+    @staticmethod
+    def persistencia():
+        from database.persistencias.pedido_persistencia import PedidoPersistencia
+        return PedidoPersistencia()
+
+    @staticmethod
+    def all() -> list:
+        return Pedido.persistencia().buscar()
+
+    @staticmethod
+    def find(id: int) -> 'Pedido':
+        return Pedido.persistencia().visualizar(id)
 
     @property
     def data(self) -> datetime:
@@ -68,8 +74,16 @@ class Pedido(ModelBase):
         dados = super().to_dict()
 
         valor_total = 0
+        itens_agrupados = {}
         for item in self.__itens:
-            valor_total += item.preco * item.quantidade
+            if item.id not in itens_agrupados:
+                itens_agrupados[item.id] = {
+                    'item': item,
+                    'quantidade': 0,
+                }
+            itens_agrupados[item.id]['quantidade'] += 1
 
+        for item in itens_agrupados.values():
+            valor_total += item['item'].preco * item['quantidade']
         dados['valor'] = valor_total
         return dados

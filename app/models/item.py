@@ -6,15 +6,24 @@ from app.models.model_base import ModelBase
 
 class Item(ModelBase):
     @abstractmethod
-    def __init__(self, id: int, nome: str, quantidade: float, unidade: UnidadeEnum):
-        self.__id = id
+    def __init__(self, nome: str, quantidade: float, unidade: UnidadeEnum, **kwargs):
+        super().__init__(nome=nome, quantidade=quantidade, unidade=unidade, **kwargs)
         self.__nome = nome
         self.__quantidade = quantidade
         self.__unidade = unidade
 
-    @property
-    def id(self) -> int:
-        return self.__id
+    @staticmethod
+    def persistencia():
+        from database.persistencias.item_persistencia import ItemPersistencia
+        return ItemPersistencia()
+
+    @staticmethod
+    def all() -> list:
+        return Item.persistencia().buscar()
+
+    @staticmethod
+    def find(id: int) -> 'Item':
+        return Item.persistencia().visualizar(id)
 
     @property
     def nome(self) -> str:
@@ -40,11 +49,9 @@ class Item(ModelBase):
     def unidade(self, unidade: UnidadeEnum):
         self.__unidade = unidade
 
-    @staticmethod
-    def validacoes() -> dict:
+    def validacoes(self) -> dict:
         return {
             'validacoes': {
-                'id': ['required', 'integer'],
                 'nome': ['required', 'string'],
                 'quantidade': ['nullable', 'numeric'],
                 'unidade': ['required', 'string', 'enum:UnidadeEnum'],

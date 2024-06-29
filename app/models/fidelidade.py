@@ -7,8 +7,7 @@ class Fidelidade(ModelBase):
         self.__pontos: int = 0
         self.__classificacao: str = ClassificacaoPenalidadeEnum.BRONZE.value
 
-    @staticmethod
-    def validacoes() -> dict:
+    def validacoes(self) -> dict:
         return {
             'validacoes': {
                 'pontos': ['required', 'integer'],
@@ -18,6 +17,19 @@ class Fidelidade(ModelBase):
                 'classificacao': 'classificação',
             },
         }
+
+    @staticmethod
+    def persistencia():
+        from database.persistencias.fidelidade_persistencia import FidelidadePersistencia
+        return FidelidadePersistencia()
+
+    @staticmethod
+    def all() -> list:
+        return Fidelidade.persistencia().buscar()
+
+    @staticmethod
+    def find(id: int) -> 'Fidelidade':
+        return Fidelidade.persistencia().visualizar(id)
 
     @property
     def pontos(self) -> int:

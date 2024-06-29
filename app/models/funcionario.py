@@ -5,14 +5,13 @@ from app.models.pessoa import Pessoa
 class Funcionario(Pessoa):
     def __init__(
             self,
-            id: int,
             nome: str,
             login: str,
             email: str,
             senha: str,
             cargo: CargoEnum,
     ):
-        super().__init__(id, nome, login, email, senha)
+        super().__init__(nome, login, email, senha)
         self.__cargo = cargo
 
     def validacoes(self) -> dict:
@@ -21,6 +20,19 @@ class Funcionario(Pessoa):
             'cargo': ['required', 'string', 'enum:CargoEnum'],
         })
         return validacoes
+
+    @staticmethod
+    def persistencia():
+        from database.persistencias.funcionario_persistencia import FuncionarioPersistencia
+        return FuncionarioPersistencia()
+
+    @staticmethod
+    def all() -> list:
+        return Funcionario.persistencia().buscar()
+
+    @staticmethod
+    def find(id: int) -> 'Funcionario':
+        return Funcionario.persistencia().visualizar(id)
 
     @property
     def cargo(self) -> CargoEnum:

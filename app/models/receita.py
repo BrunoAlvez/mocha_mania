@@ -3,16 +3,22 @@ from app.models.model_base import ModelBase
 
 
 class Receita(ModelBase):
-    def __init__(self, id: int, nome: str, preparos: list):
-        self.__id = id
+    def __init__(self, nome: str, preparos: list):
+        super().__init__(nome=nome, preparos=preparos)
         self.__nome = nome
         self.__preparos = preparos
 
     @staticmethod
-    def validacoes() -> dict:
+    def all() -> list:
+        return Receita.persistencia().buscar()
+
+    @staticmethod
+    def find(id: int) -> 'Receita':
+        return Receita.persistencia().visualizar(id)
+
+    def validacoes(self) -> dict:
         return {
             'validacoes': {
-                'id': ['required', 'integer'],
                 'nome': ['required', 'string'],
                 'preparos': ['required', 'list', 'instance:Preparo'],
             },
@@ -21,9 +27,10 @@ class Receita(ModelBase):
             }
         }
 
-    @property
-    def id(self) -> int:
-        return self.__id
+    @staticmethod
+    def persistencia():
+        from database.persistencias.receita_persistencia import ReceitaPersistencia
+        return ReceitaPersistencia()
 
     @property
     def nome(self) -> str:

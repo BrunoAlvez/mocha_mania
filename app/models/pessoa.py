@@ -5,22 +5,19 @@ from app.models.model_base import ModelBase
 
 class Pessoa(ModelBase):
     @abstractmethod
-    def __init__(self, id: int, nome: str, login: str, email: str, senha: str, **kwargs):
-        super().__init__(id=id, nome=nome, login=login, email=email, senha=senha, **kwargs)
-        self.__id = id
+    def __init__(self, nome: str, login: str, email: str, senha: str, **kwargs):
+        super().__init__(nome=nome, login=login, email=email, senha=senha, **kwargs)
         self.__nome = nome
         self.__login = login
         self.__email = email
         self.__senha = senha
 
-    @staticmethod
-    def validacoes() -> dict:
+    def validacoes(self) -> dict:
         return {
             'validacoes': {
-                'id': ['required', 'integer'],
                 'nome': ['required', 'string', 'min:5', 'max:100'],
-                'login': ['required', 'string', 'min:5', 'max:50'],
-                'email': ['required', 'string', 'email'],
+                'login': ['required', 'unique', 'string', 'min:5', 'max:50'],
+                'email': ['required', 'unique', 'string', 'email'],
                 'senha': ['required', 'string', 'min:8', 'max:50']
             },
             'traducoes': {
@@ -28,10 +25,6 @@ class Pessoa(ModelBase):
                 'email': 'e-mail',
             }
         }
-
-    @property
-    def id(self) -> int:
-        return self.__id
 
     @property
     def nome(self) -> str:
