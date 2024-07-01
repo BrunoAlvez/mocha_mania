@@ -50,7 +50,7 @@ class ClienteService(ServiceBase):
             for preparo in produto.preparos:
                 ingrediente = item_service.encontrar(preparo.ingrediente.id)
                 if ingrediente.quantidade < preparo.quantidade:
-                    return ClienteService.pedir(ingrediente, cliente, True)
+                    return ClienteService.pedir(produto, cliente, True)
                 else:
                     item_service.retirar(ingrediente, preparo.quantidade)
         else:

@@ -15,12 +15,12 @@ class Preparo(ModelBase):
             unidade_tempo: UnidadeTempoEnum or None,
     ):
         super().__init__(
-            ingrediente=Ingrediente,
-            quantidade=float,
-            unidade=UnidadeEnum,
-            descricao=str,
-            tempo=float or None,
-            unidade_tempo=UnidadeTempoEnum or None,
+            ingrediente=ingrediente,
+            quantidade=quantidade,
+            unidade=unidade,
+            descricao=descricao,
+            tempo=tempo,
+            unidade_tempo=unidade_tempo,
         )
         self.__ingrediente = ingrediente
         self.__quantidade = quantidade
@@ -34,10 +34,10 @@ class Preparo(ModelBase):
             'validacoes': {
                 'ingrediente': ['required', 'instance:Ingrediente'],
                 'quantidade': ['required', 'float'],
-                'unidade': ['required', 'string', 'enum:UnidadeDeMedidaEnum'],
+                'unidade': ['required', 'string', 'enum:UnidadeEnum'],
                 'descricao': ['required', 'string'],
                 'tempo': ['nullable', 'float'],
-                'unidade_tempo': ['nullable', 'string', 'enum:UnidadeDeTempoEnum'],
+                'unidade_tempo': ['nullable', 'string', 'enum:UnidadeTempoEnum'],
             },
             'traducoes': {
                 'descricao': 'descrição',

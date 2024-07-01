@@ -6,13 +6,13 @@ from app.models.model_base import ModelBase
 
 
 class Pedido(ModelBase):
-    def __init__(self, cliente: Cliente, itens: list):
-        super().__init__(cliente=cliente, itens=itens)
+    def __init__(self, cliente: Cliente, itens: list, responsavel=None, status=StatusPedidoEnum.PENDENTE):
+        super().__init__(cliente=cliente, itens=itens, responsavel=responsavel, status=status)
         self.__data = datetime.now()
-        self.__status = StatusPedidoEnum.PENDENTE
+        self.__status = status
         self.__itens = itens
         self.__cliente = cliente
-        self.__responsavel = None
+        self.__responsavel = responsavel
 
     def validacoes(self) -> dict:
         return {

@@ -76,16 +76,21 @@ class ItemService(ServiceBase):
                 itens = list(filter(lambda item: isinstance(item, Produto) and item.preparado(), itens))
         return itens
 
-    @staticmethod
-    def reabastecer(item: Item, quantidade: float) -> Item:
-        quantidade_no_item = float(item.quantidade)
-        quantidade_nova = quantidade_no_item + quantidade
-        item.quantidade = quantidade_nova
-        return item
+    def reabastecer(self, item: Item or int, quantidade: float) -> Item:
+        if isinstance(item, int):
+            item = self.encontrar(item)
+        return self.atualizar(item, {'quantidade': float(item.quantidade) + quantidade})
 
-    @staticmethod
-    def retirar(item: Item, quantidade: float) -> Item:
-        quantidade_no_item = float(item.quantidade)
-        quantidade_nova = quantidade_no_item - quantidade
-        item.quantidade = quantidade_nova
-        return item
+    def retirar(self, item: Item, quantidade: float) -> Item:
+        return self.atualizar(item, {'quantidade': float(item.quantidade) - quantidade})
+
+    def verificar_disponibilidade(self, produto: Produto) -> bool:
+        if not isinstance(produto, Produto):
+            return False
+        if produto.preparado() and produto.quantidade <= 0:
+            for preparo in produto.preparos:
+                ingrediente = self.encontrar(preparo.ingrediente.id)
+                if ingrediente.quantidade < preparo.quantidade:
+                    return False
+            return True
+        return produto.quantidade > 0

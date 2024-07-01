@@ -6,7 +6,16 @@ import app.helpers.regras as regras
 class ModelBase(ABC):
     @abstractmethod
     def __init__(self, **kwargs):
+        self.__id = None
         self.__valida_dados(**kwargs)
+
+    @property
+    def id(self) -> int:
+        return self.__id
+
+    @id.setter
+    def id(self, id: int):
+        self.__id = id
 
     def __setattr__(self, atributo, value):
         self.__valida_dados(**{atributo: value})

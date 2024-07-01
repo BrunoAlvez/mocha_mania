@@ -265,6 +265,8 @@ def enum(atributo, valor, classe_enum: str):
 
 def unique(atributo, valor, modelo):
     for registro in modelo.all():
+        if registro.id == modelo.id:
+            continue
         if getattr(registro, atributo) == valor:
             traducao: str = __traducoes.get(atributo, atributo)
             __guarda_erro(atributo, f'O campo {traducao} já está cadastrado.')

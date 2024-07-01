@@ -6,94 +6,58 @@ from app.models.cliente import Cliente
 from app.services.cliente_service import ClienteService
 from app.services.item_service import ItemService
 from app.services.pedido_service import PedidoService
-from app.views.cliente_view import ClienteView
 
 
 class ClienteController(ControllerBase):
-    def __init__(self, usuario_logado: Cliente, ao_sair: callable):
-        super().__init__(ClienteView())
-
-        self.__usuario_logado = usuario_logado
-        self.__ao_sair = ao_sair
+    def __init__(self, usuario_logado_id: int):
+        self.__usuario_logado = ClienteService.encontrar(usuario_logado_id)
 
     @property
     def usuario_logado(self) -> Cliente:
         return self.__usuario_logado
 
-    def menu(self):
-        opcao = self._view.menu(self.usuario_logado.fidelidade is None)
-        if opcao == 1:
-            self.__pedir()
-        elif opcao == 2:
-            self.__historico()
-        elif opcao == 3:
-            self.__perfil()
-        elif opcao == 4 and self.usuario_logado.fidelidade is None:
-            self.__fidelizar()
-        elif opcao == 0:
-            self.__usuario_logado = None
-            self._sair(ao_sair=self.__ao_sair)
-        else:
-            self.menu()
-
-    def __pedir(self):
-        item_service = ItemService()
-        produtos_repositorio = []
-        for produto in item_service.produtos():
-            produtos_repositorio.append(self._repositorio(produto))
+    def pedir(self, produto_id: int):
         try:
-            produto_id = self._view.pedido(produtos_repositorio)
-            produto = item_service.encontrar_produto(produto_id)
-            pedido = ClienteService.pedir(produto, self.usuario_logado)
-            self._view.sucesso_ao_pedir(self._repositorio(pedido))
+            produto = ItemService.encontrar_produto(produto_id)
+            ClienteService.pedir(produto, self.usuario_logado)
+            print(PedidoService.listar({'cliente_id': self.usuario_logado.id}))
+            return True
         except RegraDeNegocioException as e:
-            self._view.erro_ao_pedir(e.mensagem)
-            self.__pedir()
-        except Exception as e:
-            self._view.erro_ao_pedir(e)
-            self.__pedir()
-        self.menu()
+            return False
 
-    def __historico(self, data: datetime = None):
+    def historico(self, data: str = None):
         filtros = {}
         if self.__usuario_logado is not None:
             filtros['cliente_id'] = self.__usuario_logado.id
         if data is not None:
+            data = datetime.strptime(data, '%d/%m/%Y')
             filtros['data'] = data
 
         pedidos = PedidoService.listar(filtros)
-
         pedidos_repositorio = []
         for pedido in pedidos:
             pedidos_repositorio.append(self._repositorio(pedido))
-        opcao = self._view.historico(pedidos_repositorio)
-        if opcao == 0:
-            self.menu()
-        elif opcao == 1:
-            try:
-                data_pesquisada = self._view.pesquisa_por_data()
-                data_pesquisada = datetime.strptime(data_pesquisada, '%d/%m/%Y')
-                self.__historico(data_pesquisada)
-            except ValueError:
-                self._view.data_invalida()
-                self.__historico(data)
-        else:
-            self.__historico(data)
+        return pedidos_repositorio
 
-    def __perfil(self):
-        opcao = self._view.perfil(self._repositorio(self.usuario_logado))
-        if opcao == 0:
-            self.menu()
-        else:
-            self.__perfil()
+    def perfil(self):
+        return self._repositorio(Cliente.find(self.__usuario_logado.id))
 
-    def __fidelizar(self):
+    def atualizar(self, dados: dict):
+        erros = []
+        if 'confirmacao_senha' in dados:
+            erros = [{'confirmacao_senha': 'A senha e a confirmação de senha não coincidem.'}]
         try:
-            cliente = ClienteService.cadastrar_fidelidade(self.usuario_logado.id)
-            self._view.sucesso_ao_fidelizar(cliente)
+            return self._repositorio(ClienteService.atualizar(self.__usuario_logado, dados))
         except RegraDeNegocioException as e:
-            self._view.erro_ao_fidelizar(e)
-        self.menu()
+            erros_validacao = e.dados_extras['erros']
+            for atributo, erro in [(erro, erros_validacao[0][erro]) for erro in erros_validacao[0]]:
+                erros.append({atributo: erro})
+            return {
+                'erros': erros,
+            }
+
+    def remover(self):
+        ClienteService.remover(self.__usuario_logado.id)
 
     @staticmethod
     def validar_usuario(login: str, senha: str) -> Cliente or None:

@@ -24,7 +24,6 @@ class ItensSeeder(Seeder):
         ]
         preparos = [
             Preparo(
-                1,
                 ingredientes[0],
                 1,
                 ingredientes[0].unidade,
@@ -33,7 +32,6 @@ class ItensSeeder(Seeder):
                 UnidadeTempoEnum.MINUTO,
             ),
             Preparo(
-                2,
                 ingredientes[1],
                 2,
                 ingredientes[1].unidade,
@@ -42,7 +40,6 @@ class ItensSeeder(Seeder):
                 UnidadeTempoEnum.SEGUNDO,
             ),
             Preparo(
-                3,
                 ingredientes[2],
                 3,
                 ingredientes[2].unidade,
@@ -51,7 +48,6 @@ class ItensSeeder(Seeder):
                 UnidadeTempoEnum.MINUTO,
             ),
             Preparo(
-                4,
                 ingredientes[3],
                 4,
                 ingredientes[3].unidade,
@@ -60,7 +56,6 @@ class ItensSeeder(Seeder):
                 UnidadeTempoEnum.MINUTO,
             ),
             Preparo(
-                5,
                 ingredientes[4],
                 5,
                 ingredientes[4].unidade,
@@ -69,7 +64,6 @@ class ItensSeeder(Seeder):
                 UnidadeTempoEnum.MINUTO,
             ),
             Preparo(
-                6,
                 ingredientes[5],
                 6,
                 ingredientes[5].unidade,
@@ -78,7 +72,6 @@ class ItensSeeder(Seeder):
                 UnidadeTempoEnum.MINUTO,
             ),
             Preparo(
-                7,
                 ingredientes[6],
                 7,
                 ingredientes[6].unidade,
@@ -87,7 +80,6 @@ class ItensSeeder(Seeder):
                 UnidadeTempoEnum.MINUTO,
             ),
             Preparo(
-                8,
                 ingredientes[7],
                 8,
                 ingredientes[7].unidade,
@@ -96,7 +88,6 @@ class ItensSeeder(Seeder):
                 UnidadeTempoEnum.MINUTO,
             ),
             Preparo(
-                9,
                 ingredientes[8],
                 9,
                 ingredientes[8].unidade,
@@ -105,7 +96,6 @@ class ItensSeeder(Seeder):
                 UnidadeTempoEnum.MINUTO,
             ),
             Preparo(
-                10,
                 ingredientes[9],
                 10,
                 ingredientes[9].unidade,

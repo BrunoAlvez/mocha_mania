@@ -1,65 +1,25 @@
-from app.helpers.input import input_int
+import PySimpleGUI as sg
+
+from app.views.screens.menu_cliente import MenuCliente
+from app.views.screens.menu_pedido_cliente import MenuPedidoCliente
+from app.views.screens.perfil import Perfil
+from app.views.screens.perfil_formulario_atualizacao import PerfilFormularioAtualizacao
 from app.views.view_base import ViewBase
 
 
 class ClienteView(ViewBase):
-    @staticmethod
-    def menu(tem_fidelidade: bool):
-        print('###         Cliente         ###')
-        print('Escolha uma opção:')
-        if tem_fidelidade:
-            return input_int('[1] Pedir - [2] Histórico - [3] Perfil - [0] Sair\n')
-        return input_int('[1] Pedir - [2] Histórico - [3] Perfil - [4] Fidelizar - [0] Sair\n')
+    def __init__(self, usuario_logado_id: int):
+        super().__init__({
+            'MENU': MenuCliente(usuario_logado_id),
+            'PEDIDO': MenuPedidoCliente(usuario_logado_id),
+            'PERFIL': Perfil(usuario_logado_id),
+            'ATUALIZAR-PERFIL': PerfilFormularioAtualizacao(usuario_logado_id),
+        })
+        self.usuario_logado_id = usuario_logado_id
 
-    def pedido(self, produtos: list):
-        if len(produtos) == 0:
-            print('Não há produtos disponíveis para pedir.')
-            return input_int('[0] Voltar\n')
-        print('###         Pedir         ###')
-        print('Escolha um produto:')
-        for produto in produtos:
-            print(f'[{produto["id"]}] - {produto["nome"]} - R${produto["preco"]}')
-        return self._input_int_com_sair('Digite o número do produto: ', 1)
-
-    @staticmethod
-    def erro_ao_pedir(mensagem: str):
-        print(f'Erro ao pedir: {mensagem}')
-
-    @staticmethod
-    def sucesso_ao_pedir(pedido: dict):
-        print(f'Pedido #{pedido["id"]} realizado com sucesso!')
-
-    @staticmethod
-    def historico(pedidos: list):
-        print('###         Histórico         ###')
-        if len(pedidos) == 0:
-            print('Digite "0" (zero) para sair')
-            print('Nenhum pedido cadastrado\n')
-        else:
-            print(' | '.join(['      ID      ', '     Data     ', '     Valor     ']))
-            for pedido in pedidos:
-                print(f'#{pedido["id"]} - {pedido["data"].strftime("%d/%m/%Y")} - R${pedido["valor"]}')
-            print('Digite "0" (zero) para sair')
-            print('Digite o "1" (um) para filtrar')
-        return input_int(minimo=0, maximo=1)
-
-    @staticmethod
-    def pesquisa_por_data():
-        return input('Digite a data no formato dd/mm/aaaa: ')
-
-    @staticmethod
-    def perfil(cliente: dict):
-        print(f'Nome: {cliente["nome"]}')
-        print(f'Email: {cliente["email"]}')
-        print(f'Telefone: {cliente["telefone"]}')
-        if cliente.get('fidelidade'):
-            print(f'Fidelidade: {cliente["fidelidade"]}')
-        return input_int('[0] Voltar\n')
-
-    @staticmethod
-    def sucesso_ao_cadastrar(cliente: dict):
-        print(f'Cliente {cliente["nome"]} cadastrado com sucesso!')
-
-    @staticmethod
-    def sucesso_ao_fidelizar():
-        print('Fidelidade cadastrada com sucesso!')
+    def tratar_eventos(self, event: str, values: dict, window: sg.Window):
+        if event == '-SAIR-':
+            from app.views.sistema_view import SistemaView
+            window.hide()
+            SistemaView()
+        return super().tratar_eventos(event, values, window)

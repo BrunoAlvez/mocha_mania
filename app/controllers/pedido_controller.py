@@ -1,13 +1,13 @@
 from app.controllers.controller_base import ControllerBase
 from app.enums.status_pedido_enum import StatusPedidoEnum
 from app.models.funcionario import Funcionario
-from app.views.pedido_view import PedidoView
+from app.services.funcionario_service import FuncionarioService
+from app.services.pedido_service import PedidoService
 
 
 class PedidoController(ControllerBase):
-    def __init__(self, ao_sair: callable):
-        self._view = PedidoView()
-        self.__ao_sair = ao_sair
+    def __init__(self, usuario_logado_id: int):
+        self.__usuario_logado = FuncionarioService.encontrar(usuario_logado_id)
 
     @property
     def usuario_logado(self) -> Funcionario:
@@ -17,53 +17,24 @@ class PedidoController(ControllerBase):
     def usuario_logado(self, usuario: Funcionario):
         self.__usuario_logado = usuario
 
-    @property
-    def ao_sair(self) -> callable:
-        return self.__ao_sair
-
-    @ao_sair.setter
-    def ao_sair(self, ao_sair: callable):
-        self.__ao_sair = ao_sair
-
-    def menu(self):
-        opcao = self._view.menu()
-        if opcao == 1:
-            self.__listar()
-        elif opcao == 0:
-            self.__ao_sair()
+    def listar(self, filtros: dict = None):
+        pedidos = []
+        if filtros is not None:
+            if 'apenas_pendentes' in filtros:
+                pedidos_pendentes = PedidoService.listar({'status': StatusPedidoEnum.PENDENTE})
+                pedidos_em_preparo = PedidoService.listar({'status': StatusPedidoEnum.EM_PREPARO})
+                pedidos = pedidos_pendentes + pedidos_em_preparo
         else:
-            self.menu()
-
-    def __listar(self):
-        pedidos = self.__service.listar()
+            pedidos = PedidoService.listar()
         pedidos_repositorio = []
         for pedido in pedidos:
             pedidos_repositorio.append(self._repositorio(pedido))
-        opcao = self._view.listar(pedidos_repositorio)
-        if opcao == 0:
-            self.menu()
-        else:
-            self.__encontrar(opcao)
+        return pedidos_repositorio
 
-    def __encontrar(self, id: int):
-        pedido = self.__service.encontrar(id)
-        pedido_repositorio = self._repositorio(pedido)
-        opcao = self._view.detalhes(pedido_repositorio)
-        if opcao == 1 and pedido.status == StatusPedidoEnum.PENDENTE:
-            self.__assumir(id)
-        elif opcao == 0:
-            self.menu()
-        else:
-            self.__encontrar(id)
+    def assumir(self, id: int):
+        PedidoService().assumir(id, self.__usuario_logado)
+        return self._repositorio(PedidoService.encontrar(id))
 
-    def __assumir(self, id: int):
-        self.__service.assumir(id, self.__usuario_logado)
-        finalizado = self._view.assumir()
-        if finalizado:
-            self.__service.finalizar(id)
-            self.menu()
-        else:
-            self.__assumir(id)
-
-    def sem_pedidos(self):
-        self._view.sem_pedidos()
+    def finalizar(self, id: int):
+        PedidoService().finalizar(id)
+        return self._repositorio(PedidoService.encontrar(id))
