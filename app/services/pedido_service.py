@@ -7,10 +7,6 @@ from app.services.service_base import ServiceBase
 
 class PedidoService(ServiceBase):
     @staticmethod
-    def pedidos():
-        return Pedido.all()
-
-    @staticmethod
     def cadastrar(dados: dict) -> Pedido:
         return Pedido(**dados).create()
 
@@ -41,7 +37,10 @@ class PedidoService(ServiceBase):
         return pedidos
 
     def assumir(self, id: int, funcionario: Funcionario) -> Pedido:
-        return self.atualizar(self.encontrar(id), {'responsavel': funcionario})
+        return self.atualizar(self.encontrar(id), {
+            'responsavel': funcionario,
+            'status': StatusPedidoEnum.EM_PREPARO,
+        })
 
     def finalizar(self, id: int) -> Pedido:
         return self.atualizar(self.encontrar(id), {'status': StatusPedidoEnum.FINALIZADO})

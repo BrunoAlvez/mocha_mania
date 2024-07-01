@@ -1,21 +1,9 @@
 from app.enums.cargo_enum import CargoEnum
 from app.models.funcionario import Funcionario
-from app.services.item_service import ItemService
-from app.services.pedido_service import PedidoService
 from app.services.service_base import ServiceBase
-from database.seeders.funcionario_gerente_seeder import FuncionarioGerenteSeeder
 
 
 class FuncionarioService(ServiceBase):
-    def __init__(self, item_service: ItemService, pedido_service: PedidoService):
-        self.__funcionarios = FuncionarioGerenteSeeder().run()
-        self.__item_service = item_service
-        self.__pedido_service = pedido_service
-
-    @property
-    def funcionarios(self) -> [Funcionario]:
-        return self.__funcionarios
-
     @staticmethod
     def cadastrar(dados: dict) -> Funcionario:
         return Funcionario(**dados).create()

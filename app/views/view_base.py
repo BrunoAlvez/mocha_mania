@@ -13,7 +13,7 @@ class ViewBase(ABC):
         layout = []
         layout_keys = []
         for key, screen in self.__screens.items():
-            key = self.key_layout(key)
+            key = self.__key_layout(key)
             layout_keys.append(key)
             layout.append(sg.Column(
                 screen,
@@ -50,24 +50,16 @@ class ViewBase(ABC):
                     window[self.__layout_atual_key].update(visible=True)
         window.close()
 
-    @property
-    def layout_atual_key(self):
-        return self.__layout_atual_key
-
-    @layout_atual_key.setter
-    def layout_atual_key(self, layout_atual_key):
-        self.__layout_atual_key = layout_atual_key
-
     def tratar_componentes(self, window: sg.Window):
-        self.__screens[self.key_screen(self.layout_atual_key)].tratar_componentes(window, self.layout_atual_key)
+        self.__screens[self.__key_screen(self.__layout_atual_key)].tratar_componentes(window, self.__layout_atual_key)
 
     def tratar_eventos(self, event: str, values: dict, window: sg.Window):
-        return self.__screens[self.key_screen(self.layout_atual_key)].tratar_eventos(event, values, window)
+        return self.__screens[self.__key_screen(self.__layout_atual_key)].tratar_eventos(event, values, window)
 
     @staticmethod
-    def key_layout(key: str) -> str:
+    def __key_layout(key: str) -> str:
         return f'-{key}-'
 
     @staticmethod
-    def key_screen(key: str) -> str:
+    def __key_screen(key: str) -> str:
         return key[1:-1]

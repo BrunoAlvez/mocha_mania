@@ -9,7 +9,7 @@ from app.views.screens.screen import Screen
 
 class MenuPedidoCliente(Screen):
     def __init__(self, usuario_logado_id: int):
-        self.__cliente_controller = ClienteController(usuario_logado_id)
+        self.__usuario_logado_id = usuario_logado_id
 
     def _layout(self) -> list:
         itens = EstoqueController().listar_produtos()
@@ -51,8 +51,15 @@ class MenuPedidoCliente(Screen):
     def tratar_eventos(self, event: str, values: dict, window: sg.Window):
         if event.startswith('-PEDIDO-PRODUTO-'):
             produto_id = int(event.split('-')[-2])
-            retorno = self.__cliente_controller.pedir(produto_id)
-            if retorno:
+            retorno = ClienteController(self.__usuario_logado_id).pedir(produto_id)
+            if isinstance(retorno, dict):
+                try:
+                    pontos_fidelidade = retorno['cliente']['fidelidade']['pontos']
+                    window['-PONTOS-'].update(pontos_fidelidade)
+                except KeyError:
+                    pass
+                except TypeError:
+                    pass
                 return '-MENU-'
             else:
                 sg.popup('Erro ao realizar pedido!', 'Produto indisponível ou não encontrado.')

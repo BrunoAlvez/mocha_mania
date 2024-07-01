@@ -7,18 +7,6 @@ from app.services.service_base import ServiceBase
 
 class ItemService(ServiceBase):
     @staticmethod
-    def itens() -> [Item]:
-        return Item.all()
-
-    @staticmethod
-    def produtos() -> [Produto]:
-        return Produto.all()
-
-    @staticmethod
-    def ingredientes() -> [Ingrediente]:
-        return Ingrediente.all()
-
-    @staticmethod
     def cadastrar(dados: dict) -> Item:
         tipo = dados.pop('tipo')
         if tipo is Produto:

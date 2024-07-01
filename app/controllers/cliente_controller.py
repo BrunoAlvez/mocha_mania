@@ -19,9 +19,7 @@ class ClienteController(ControllerBase):
     def pedir(self, produto_id: int):
         try:
             produto = ItemService.encontrar_produto(produto_id)
-            ClienteService.pedir(produto, self.usuario_logado)
-            print(PedidoService.listar({'cliente_id': self.usuario_logado.id}))
-            return True
+            return self._repositorio(ClienteService.pedir(produto, self.usuario_logado))
         except RegraDeNegocioException as e:
             return False
 
@@ -58,6 +56,9 @@ class ClienteController(ControllerBase):
 
     def remover(self):
         ClienteService.remover(self.__usuario_logado.id)
+
+    def fidelizar(self):
+        return self._repositorio(ClienteService.fidelizar(self.__usuario_logado))
 
     @staticmethod
     def validar_usuario(login: str, senha: str) -> Cliente or None:

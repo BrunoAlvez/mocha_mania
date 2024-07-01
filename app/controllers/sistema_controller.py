@@ -55,7 +55,7 @@ class SistemaController(ControllerBase):
             if erros:
                 raise RegraDeNegocioException('Erros de validação', dados_extras={'erros': erros})
             cliente.create()
-            self.login_cliente({'login': cliente.login, 'senha': dados['senha']})
+            return self.login_cliente({'login': cliente.login, 'senha': dados['senha']})
         except RegraDeNegocioException as e:
             erros_validacao = e.dados_extras.get('erros')
             erros_validacao.reverse()

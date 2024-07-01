@@ -1,6 +1,7 @@
 import PySimpleGUI as sg
 
 import app.helpers.string as string_helper
+from app.views.cliente_view import ClienteView
 from app.views.components.input_form import InputForm
 from app.views.components.sized_box import SizedBox
 from app.views.screens.screen import Screen
@@ -9,10 +10,6 @@ from app.views.screens.screen import Screen
 class CadastroCliente(Screen):
     def __init__(self):
         self.__erros = {}
-
-    @property
-    def erros(self):
-        return self.__erros
 
     def _layout(self) -> list:
         return [
@@ -104,7 +101,10 @@ class CadastroCliente(Screen):
                 'telefone': values['-TELEFONE-SUBMIT-'],
             }
             dados = SistemaController().cadastrar(dados)
-            if 'erros' in dados:
+            if 'usuario.id' in dados:
+                window.close()
+                ClienteView(dados['usuario.id'])
+            elif 'erros' in dados:
                 self.__erros = dados['erros']
         elif event == '-TELEFONE-SUBMIT-':
             window[event].update(string_helper.mascara_telefone(values[event]))

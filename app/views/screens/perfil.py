@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import PySimpleGUI as sg
 
 import app.helpers.string as string_helper
@@ -12,6 +14,8 @@ class Perfil(Screen):
 
     def _layout(self) -> list:
         cliente = ClienteController(self.__usuario_logado_id).perfil()
+        if isinstance(cliente['data_de_nascimento'], str):
+            cliente['data_de_nascimento'] = datetime.strptime(cliente['data_de_nascimento'], '%d/%m/%Y')
         return [
             [sg.Text('< Voltar', key='-MENU-BUTTON-', font=('Helvetica', 10), size=(0, 0), enable_events=True,
                      expand_x=True)],
@@ -37,10 +41,44 @@ class Perfil(Screen):
                 sg.Text(string_helper.formatar_data(cliente['data_de_nascimento']), key='-DATA-DE-NASCIMENTO-',
                         colors='white', size=(16, 0)),
             ],
+            *SizedBox(height=4),
+            *self.__secao_fidelidade(cliente),
             [sg.Text('Atualizar dados', key='-ATUALIZAR-PERFIL-BUTTON-', font=('Helvetica', 10), size=(0, 0),
                      enable_events=True)],
             [sg.Text('Remover conta', key='-REMOVER-BUTTON-', font=('Helvetica', 10), size=(0, 0), enable_events=True)],
             *SizedBox(height=4),
+        ]
+
+    @staticmethod
+    def __secao_fidelidade(cliente: dict) -> list:
+        fidelizado = True if cliente['fidelidade'] else False
+        fidelidade = cliente['fidelidade']
+        pontos = fidelidade['pontos'] if fidelizado else ''
+        classificacao = fidelidade['classificacao'] if fidelizado else ''
+        return [
+            [sg.Column(
+                [
+                    [
+                        sg.Text('Pontos:', size=(12, 0)),
+                        sg.Text(pontos, key='-PONTOS-', colors='white', size=(16, 0))
+                    ],
+                    [
+                        sg.Text('Classificação:', size=(12, 0)),
+                        sg.Text(classificacao, key='-CLASSIFICACAO-', colors='white', size=(16, 0)),
+                    ],
+                ],
+                key='-FIDELIDADE-COLUMN-',
+                visible=fidelizado,
+            )],
+            [
+                sg.Button(
+                    'Fidelizar',
+                    key='-FIDELIZAR-BUTTON-',
+                    font=('Helvetica', 10),
+                    size=(16, 0),
+                    visible=not fidelizado,
+                ),
+            ],
         ]
 
     def tratar_eventos(self, event: str, values: dict, window: sg.Window):
@@ -51,3 +89,9 @@ class Perfil(Screen):
                 ClienteController(self.__usuario_logado_id).remover()
                 window.hide()
                 SistemaView()
+        elif event == '-FIDELIZAR-':
+            fidelidade = ClienteController(self.__usuario_logado_id).fidelizar()
+            window['-FIDELIZAR-BUTTON-'].update(visible=False)
+            window['-FIDELIDADE-COLUMN-'].update(visible=True)
+            window['-PONTOS-'].update(fidelidade['pontos'])
+            window['-CLASSIFICACAO-'].update(fidelidade['classificacao'])

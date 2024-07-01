@@ -28,8 +28,3 @@ class ServiceBase(ABC):
     @abstractmethod
     def listar(filtros: dict = None):
         pass
-
-    @staticmethod
-    def get_id(dados: [ModelBase]):
-        ordenado = sorted(dados, key=lambda x: x.id)
-        return ordenado[-1].id + 1 if ordenado else 1

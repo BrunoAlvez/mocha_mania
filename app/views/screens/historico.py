@@ -64,6 +64,7 @@ class Historico(Screen):
                 window[f'-STATUS-{pedido["id"]}'].update(visible=pedido['id'] in pedidos_ids)
                 window[f'-VALOR-{pedido["id"]}'].update(visible=pedido['id'] in pedidos_ids)
                 window[f'-DATA-{pedido["id"]}'].update(visible=pedido['id'] in pedidos_ids)
+                window[f'-PEDIDO-{pedido["id"]}-COLUMN-'].update(visible=pedido['id'] in pedidos_ids)
         if event == '-MENU-':
             from app.views.cliente_view import ClienteView
             window.hide()
